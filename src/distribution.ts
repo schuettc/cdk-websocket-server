@@ -50,7 +50,11 @@ export class DistributionResources extends Construct {
 
     const defaultOrigin = new LoadBalancerV2Origin(
       props.applicationLoadBalancer,
-      { httpPort: 80, protocolPolicy: OriginProtocolPolicy.HTTP_ONLY },
+      {
+        httpPort: 80,
+        protocolPolicy: OriginProtocolPolicy.HTTP_ONLY,
+        originId: 'defaultOrigin',
+      },
     );
 
     this.distribution = new Distribution(this, 'Distribution', {
@@ -78,7 +82,10 @@ export class DistributionResources extends Construct {
                   this.distribution.distributionId
                 }`,
               ],
-              actions: ['cloudfront:*'],
+              actions: [
+                'cloudfront:GetDistribution',
+                'cloudfront:UpdateDistribution',
+              ],
             }),
           ],
         }),
@@ -90,22 +97,9 @@ export class DistributionResources extends Construct {
       ],
     });
 
-    // const customHeaderCustomResourceRole = new Role(
-    //   this,
-    //   'customHeaderCustomResourceRole',
-    //   {
-    //     assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
-    //     managedPolicies: [
-    //       ManagedPolicy.fromAwsManagedPolicyName(
-    //         'service-role/AWSLambdaBasicExecutionRole',
-    //       ),
-    //     ],
-    //   },
-    // );
-
-    const customHeaderCustomResource = new NodejsFunction(
+    const customHeaderCustomResourceLambda = new NodejsFunction(
       this,
-      'customHeaderCustomResource',
+      'customHeaderCustomResourceLambda',
       {
         handler: 'index.handler',
         entry: 'src/resources/customHeader/index.ts',
@@ -120,9 +114,8 @@ export class DistributionResources extends Construct {
       this,
       'customHeaderCustomResourceProvider',
       {
-        onEventHandler: customHeaderCustomResource,
+        onEventHandler: customHeaderCustomResourceLambda,
         logRetention: RetentionDays.ONE_WEEK,
-        // role: customHeaderCustomResourceRole,
       },
     );
 
@@ -130,8 +123,16 @@ export class DistributionResources extends Construct {
       serviceToken: customHeaderCustomResourceProvider.serviceToken,
       properties: {
         DistributionId: this.distribution.distributionId,
-        CustomHeaders: [
-          { HeaderName: props.customHeader, HeaderValue: props.randomString },
+        Origins: [
+          {
+            OriginId: 'defaultOrigin',
+            CustomHeaders: [
+              {
+                HeaderName: props.customHeader,
+                HeaderValue: props.randomString,
+              },
+            ],
+          },
         ],
       },
     });

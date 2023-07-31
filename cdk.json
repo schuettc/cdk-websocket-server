@@ -1,5 +1,5 @@
 {
-  "app": "npx ts-node -P tsconfig.json --prefer-ts-exts src/live-call-analytics-websocket.ts",
+  "app": "npx ts-node -P tsconfig.json --prefer-ts-exts src/cdk-websocket-server.ts",
   "output": "cdk.out",
   "build": "npx projen bundle",
   "watch": {

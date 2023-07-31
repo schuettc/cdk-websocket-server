@@ -5,6 +5,8 @@ import {
   SubnetType,
   Vpc,
   SecurityGroup,
+  Port,
+  Connections,
 } from 'aws-cdk-lib/aws-ec2';
 import {
   AsgCapacityProvider,
@@ -50,12 +52,15 @@ export class ECSResources extends Construct {
       vpc: props.vpc,
       instanceType: new InstanceType('m6i.large'),
       machineImage: EcsOptimizedImage.amazonLinux2(),
-      desiredCapacity: 1,
     });
 
     autoScalingGroup.role.addManagedPolicy(
       ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'),
     );
+
+    autoScalingGroup.scaleOnCpuUtilization('CpuScaling', {
+      targetUtilizationPercent: 70,
+    });
 
     const capacityProvider = new AsgCapacityProvider(this, 'capacityProvider', {
       autoScalingGroup: autoScalingGroup,
@@ -106,11 +111,25 @@ export class ECSResources extends Construct {
       cluster: this.cluster,
       taskDefinition: webSocketTask,
       assignPublicIp: true,
-      desiredCount: 0,
+      desiredCount: 1,
       vpcSubnets: { subnetType: SubnetType.PUBLIC },
       securityGroups: [webSocketServiceSecurityGroup],
       enableExecuteCommand: true,
     });
+
+    const albSecurityGroup = new SecurityGroup(this, 'ALBSecurityGroup', {
+      vpc: props.vpc,
+      description: 'Security Group for ALB',
+      allowAllOutbound: true,
+    });
+
+    webSocketServiceSecurityGroup.connections.allowFrom(
+      new Connections({
+        securityGroups: [albSecurityGroup],
+      }),
+      Port.tcp(8080),
+      'allow traffic on port 8080 from the ALB security group',
+    );
 
     const webSocketTargetGroup = new ApplicationTargetGroup(
       this,
@@ -134,7 +153,7 @@ export class ECSResources extends Construct {
         port: 80,
         protocol: ApplicationProtocol.HTTP,
         open: true,
-        defaultAction: ListenerAction.fixedResponse(503),
+        defaultAction: ListenerAction.fixedResponse(403),
       },
     );
 
@@ -143,10 +162,7 @@ export class ECSResources extends Construct {
         ListenerCondition.httpHeader(props.customHeader, [props.randomString]),
       ],
       action: ListenerAction.forward([webSocketTargetGroup]),
+      priority: 1,
     });
-
-    // webSocketListener.addTargetGroups('webSocketTargetGroupListener', {
-    //   targetGroups: [webSocketTargetGroup],
-    // });
   }
 }

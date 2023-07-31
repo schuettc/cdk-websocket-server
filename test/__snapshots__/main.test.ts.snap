@@ -2,6 +2,109 @@
 
 exports[`Snapshot 1`] = `
 {
+  "Mappings": {
+    "DefaultCrNodeVersionMap": {
+      "af-south-1": {
+        "value": "nodejs16.x",
+      },
+      "ap-east-1": {
+        "value": "nodejs16.x",
+      },
+      "ap-northeast-1": {
+        "value": "nodejs16.x",
+      },
+      "ap-northeast-2": {
+        "value": "nodejs16.x",
+      },
+      "ap-northeast-3": {
+        "value": "nodejs16.x",
+      },
+      "ap-south-1": {
+        "value": "nodejs16.x",
+      },
+      "ap-south-2": {
+        "value": "nodejs16.x",
+      },
+      "ap-southeast-1": {
+        "value": "nodejs16.x",
+      },
+      "ap-southeast-2": {
+        "value": "nodejs16.x",
+      },
+      "ap-southeast-3": {
+        "value": "nodejs16.x",
+      },
+      "ca-central-1": {
+        "value": "nodejs16.x",
+      },
+      "cn-north-1": {
+        "value": "nodejs16.x",
+      },
+      "cn-northwest-1": {
+        "value": "nodejs16.x",
+      },
+      "eu-central-1": {
+        "value": "nodejs16.x",
+      },
+      "eu-central-2": {
+        "value": "nodejs16.x",
+      },
+      "eu-north-1": {
+        "value": "nodejs16.x",
+      },
+      "eu-south-1": {
+        "value": "nodejs16.x",
+      },
+      "eu-south-2": {
+        "value": "nodejs16.x",
+      },
+      "eu-west-1": {
+        "value": "nodejs16.x",
+      },
+      "eu-west-2": {
+        "value": "nodejs16.x",
+      },
+      "eu-west-3": {
+        "value": "nodejs16.x",
+      },
+      "me-central-1": {
+        "value": "nodejs16.x",
+      },
+      "me-south-1": {
+        "value": "nodejs16.x",
+      },
+      "sa-east-1": {
+        "value": "nodejs16.x",
+      },
+      "us-east-1": {
+        "value": "nodejs16.x",
+      },
+      "us-east-2": {
+        "value": "nodejs16.x",
+      },
+      "us-gov-east-1": {
+        "value": "nodejs16.x",
+      },
+      "us-gov-west-1": {
+        "value": "nodejs16.x",
+      },
+      "us-iso-east-1": {
+        "value": "nodejs14.x",
+      },
+      "us-iso-west-1": {
+        "value": "nodejs14.x",
+      },
+      "us-isob-east-1": {
+        "value": "nodejs14.x",
+      },
+      "us-west-1": {
+        "value": "nodejs16.x",
+      },
+      "us-west-2": {
+        "value": "nodejs16.x",
+      },
+    },
+  },
   "Outputs": {
     "ClusterArn": {
       "Value": {
@@ -19,19 +122,28 @@ exports[`Snapshot 1`] = `
         ],
       },
     },
-    "DistributionURL": {
-      "Value": {
-        "Fn::GetAtt": [
-          "DistributionResourcesDistribution80C53434",
-          "DomainName",
-        ],
-      },
-    },
     "ecsExecute": {
       "Value": "aws ecs execute-command --cluster $CLUSTER --task $TASK --command "bash" --interactive",
     },
     "getTask": {
       "Value": "TASK=$( aws ecs list-tasks --cluster $CLUSTER --query taskArns --output text )",
+    },
+    "websocketUrl": {
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "wss://",
+            {
+              "Fn::GetAtt": [
+                "DistributionResourcesDistribution80C53434",
+                "DomainName",
+              ],
+            },
+            "/wss",
+          ],
+        ],
+      },
     },
   },
   "Parameters": {
@@ -120,7 +232,7 @@ exports[`Snapshot 1`] = `
             "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
             "Compress": true,
             "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
-            "TargetOriginId": "testDistributionResourcesDistributionOrigin1AB07B588",
+            "TargetOriginId": "defaultOrigin",
             "ViewerProtocolPolicy": "https-only",
           },
           "DefaultRootObject": "index.html",
@@ -150,7 +262,7 @@ exports[`Snapshot 1`] = `
                   "DNSName",
                 ],
               },
-              "Id": "testDistributionResourcesDistributionOrigin1AB07B588",
+              "Id": "defaultOrigin",
             },
           ],
           "PriceClass": "PriceClass_100",
@@ -257,11 +369,278 @@ exports[`Snapshot 1`] = `
       },
       "Type": "AWS::S3::BucketPolicy",
     },
-    "ECSResourcesASGBA47949D": {
+    "DistributionResourcescustomHeaderCustomResource5085E3F3": {
+      "DeletionPolicy": "Delete",
       "Properties": {
-        "DesiredCapacity": "1",
+        "DistributionId": {
+          "Ref": "DistributionResourcesDistribution80C53434",
+        },
+        "Origins": [
+          {
+            "CustomHeaders": [
+              {
+                "HeaderName": "X-From-CloudFront",
+                "HeaderValue": "RGceYNsG",
+              },
+            ],
+            "OriginId": "defaultOrigin",
+          },
+        ],
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "DistributionResourcescustomHeaderCustomResourceProviderframeworkonEvent913EE397",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::CloudFormation::CustomResource",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "DistributionResourcescustomHeaderCustomResourceLambdaBE095993": {
+      "DependsOn": [
+        "DistributionResourcescustomHeaderLambdaRoleF0D5CDF5",
+      ],
+      "Properties": {
+        "Architectures": [
+          "arm64",
+        ],
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "765d2d74c5afc0dd0527ce0c702c46bbe4ef787e23dfaed82d2f23f9e3e81f29.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
+          },
+        },
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "DistributionResourcescustomHeaderLambdaRoleF0D5CDF5",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs18.x",
+        "Timeout": 60,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "DistributionResourcescustomHeaderCustomResourceProviderframeworkonEvent913EE397": {
+      "DependsOn": [
+        "DistributionResourcescustomHeaderCustomResourceProviderframeworkonEventServiceRoleDefaultPolicy5D222E14",
+        "DistributionResourcescustomHeaderCustomResourceProviderframeworkonEventServiceRole26185D0C",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "f2d30cfc360482320a52a4fcde8a70f3569df79ab30be24650fda58eb60052cf.zip",
+        },
+        "Description": "AWS CDK resource provider framework - onEvent (test/DistributionResources/customHeaderCustomResourceProvider)",
+        "Environment": {
+          "Variables": {
+            "USER_ON_EVENT_FUNCTION_ARN": {
+              "Fn::GetAtt": [
+                "DistributionResourcescustomHeaderCustomResourceLambdaBE095993",
+                "Arn",
+              ],
+            },
+          },
+        },
+        "Handler": "framework.onEvent",
+        "Role": {
+          "Fn::GetAtt": [
+            "DistributionResourcescustomHeaderCustomResourceProviderframeworkonEventServiceRole26185D0C",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs18.x",
+        "Timeout": 900,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "DistributionResourcescustomHeaderCustomResourceProviderframeworkonEventLogRetentionDB60BA14": {
+      "Properties": {
+        "LogGroupName": {
+          "Fn::Join": [
+            "",
+            [
+              "/aws/lambda/",
+              {
+                "Ref": "DistributionResourcescustomHeaderCustomResourceProviderframeworkonEvent913EE397",
+              },
+            ],
+          ],
+        },
+        "RetentionInDays": 7,
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "Custom::LogRetention",
+    },
+    "DistributionResourcescustomHeaderCustomResourceProviderframeworkonEventServiceRole26185D0C": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "DistributionResourcescustomHeaderCustomResourceProviderframeworkonEventServiceRoleDefaultPolicy5D222E14": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "DistributionResourcescustomHeaderCustomResourceLambdaBE095993",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "DistributionResourcescustomHeaderCustomResourceLambdaBE095993",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "DistributionResourcescustomHeaderCustomResourceProviderframeworkonEventServiceRoleDefaultPolicy5D222E14",
+        "Roles": [
+          {
+            "Ref": "DistributionResourcescustomHeaderCustomResourceProviderframeworkonEventServiceRole26185D0C",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "DistributionResourcescustomHeaderLambdaRoleF0D5CDF5": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "cloudfront:GetDistribution",
+                    "cloudfront:UpdateDistribution",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:cloudfront::",
+                        {
+                          "Ref": "AWS::AccountId",
+                        },
+                        ":distribution/",
+                        {
+                          "Ref": "DistributionResourcesDistribution80C53434",
+                        },
+                      ],
+                    ],
+                  },
+                },
+              ],
+              "Version": "2012-10-17",
+            },
+            "PolicyName": "cloudFrontPolicy",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "ECSResourcesALBSecurityGroup67633B88": {
+      "Properties": {
+        "GroupDescription": "Security Group for ALB",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound traffic by default",
+            "IpProtocol": "-1",
+          },
+        ],
+        "VpcId": {
+          "Ref": "VPCResourcesVPC89517325",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+    "ECSResourcesAutoScalingGroupASG1CD47BE1": {
+      "Properties": {
         "LaunchConfigurationName": {
-          "Ref": "ECSResourcesASGLaunchConfig49A83238",
+          "Ref": "ECSResourcesAutoScalingGroupLaunchConfigC13AEA3F",
         },
         "MaxSize": "1",
         "MinSize": "1",
@@ -270,7 +649,7 @@ exports[`Snapshot 1`] = `
           {
             "Key": "Name",
             "PropagateAtLaunch": true,
-            "Value": "test/ECSResources/ASG",
+            "Value": "test/ECSResources/AutoScalingGroup",
           },
         ],
         "VPCZoneIdentifier": [
@@ -289,17 +668,17 @@ exports[`Snapshot 1`] = `
         },
       },
     },
-    "ECSResourcesASGInstanceProfileFC4FB3E1": {
+    "ECSResourcesAutoScalingGroupInstanceProfile7EBD9712": {
       "Properties": {
         "Roles": [
           {
-            "Ref": "ECSResourcesASGInstanceRole519441CB",
+            "Ref": "ECSResourcesAutoScalingGroupInstanceRoleC8E096CB",
           },
         ],
       },
       "Type": "AWS::IAM::InstanceProfile",
     },
-    "ECSResourcesASGInstanceRole519441CB": {
+    "ECSResourcesAutoScalingGroupInstanceRoleC8E096CB": {
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Statement": [
@@ -330,13 +709,13 @@ exports[`Snapshot 1`] = `
         "Tags": [
           {
             "Key": "Name",
-            "Value": "test/ECSResources/ASG",
+            "Value": "test/ECSResources/AutoScalingGroup",
           },
         ],
       },
       "Type": "AWS::IAM::Role",
     },
-    "ECSResourcesASGInstanceRoleDefaultPolicyED0D557C": {
+    "ECSResourcesAutoScalingGroupInstanceRoleDefaultPolicyB6F9A8E4": {
       "Properties": {
         "PolicyDocument": {
           "Statement": [
@@ -385,18 +764,18 @@ exports[`Snapshot 1`] = `
           ],
           "Version": "2012-10-17",
         },
-        "PolicyName": "ECSResourcesASGInstanceRoleDefaultPolicyED0D557C",
+        "PolicyName": "ECSResourcesAutoScalingGroupInstanceRoleDefaultPolicyB6F9A8E4",
         "Roles": [
           {
-            "Ref": "ECSResourcesASGInstanceRole519441CB",
+            "Ref": "ECSResourcesAutoScalingGroupInstanceRoleC8E096CB",
           },
         ],
       },
       "Type": "AWS::IAM::Policy",
     },
-    "ECSResourcesASGInstanceSecurityGroup8CCA7189": {
+    "ECSResourcesAutoScalingGroupInstanceSecurityGroupF11DF9D1": {
       "Properties": {
-        "GroupDescription": "test/ECSResources/ASG/InstanceSecurityGroup",
+        "GroupDescription": "test/ECSResources/AutoScalingGroup/InstanceSecurityGroup",
         "SecurityGroupEgress": [
           {
             "CidrIp": "0.0.0.0/0",
@@ -407,7 +786,7 @@ exports[`Snapshot 1`] = `
         "Tags": [
           {
             "Key": "Name",
-            "Value": "test/ECSResources/ASG",
+            "Value": "test/ECSResources/AutoScalingGroup",
           },
         ],
         "VpcId": {
@@ -416,14 +795,14 @@ exports[`Snapshot 1`] = `
       },
       "Type": "AWS::EC2::SecurityGroup",
     },
-    "ECSResourcesASGLaunchConfig49A83238": {
+    "ECSResourcesAutoScalingGroupLaunchConfigC13AEA3F": {
       "DependsOn": [
-        "ECSResourcesASGInstanceRoleDefaultPolicyED0D557C",
-        "ECSResourcesASGInstanceRole519441CB",
+        "ECSResourcesAutoScalingGroupInstanceRoleDefaultPolicyB6F9A8E4",
+        "ECSResourcesAutoScalingGroupInstanceRoleC8E096CB",
       ],
       "Properties": {
         "IamInstanceProfile": {
-          "Ref": "ECSResourcesASGInstanceProfileFC4FB3E1",
+          "Ref": "ECSResourcesAutoScalingGroupInstanceProfile7EBD9712",
         },
         "ImageId": {
           "Ref": "SsmParameterValueawsserviceecsoptimizedamiamazonlinux2recommendedimageidC96584B6F00A464EAD1953AFF4B05118Parameter",
@@ -432,7 +811,7 @@ exports[`Snapshot 1`] = `
         "SecurityGroups": [
           {
             "Fn::GetAtt": [
-              "ECSResourcesASGInstanceSecurityGroup8CCA7189",
+              "ECSResourcesAutoScalingGroupInstanceSecurityGroupF11DF9D1",
               "GroupId",
             ],
           },
@@ -458,9 +837,24 @@ echo ECS_AWSVPC_BLOCK_IMDS=true >> /etc/ecs/ecs.config",
       },
       "Type": "AWS::AutoScaling::LaunchConfiguration",
     },
+    "ECSResourcesAutoScalingGroupScalingPolicyCpuScaling64E5749B": {
+      "Properties": {
+        "AutoScalingGroupName": {
+          "Ref": "ECSResourcesAutoScalingGroupASG1CD47BE1",
+        },
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingConfiguration": {
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "ASGAverageCPUUtilization",
+          },
+          "TargetValue": 70,
+        },
+      },
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+    },
     "ECSResourcesCluster24881249": {
       "Properties": {
-        "ClusterName": "live-call-analytics-websocket-service",
+        "ClusterName": "websocket-service",
       },
       "Type": "AWS::ECS::Cluster",
     },
@@ -482,7 +876,7 @@ echo ECS_AWSVPC_BLOCK_IMDS=true >> /etc/ecs/ecs.config",
       "DependsOn": [
         "ECSResourcesWebSocketServiceRoleDefaultPolicy07B79694",
         "ECSResourcesWebSocketServiceRole413C4E03",
-        "VPCResourcesApplicationLoadBalancerwebSocketListener75D50C71",
+        "VPCResourcesApplicationLoadBalancerwebSocketListenerForwardFromCloudFrontRule2650294A",
       ],
       "Properties": {
         "Cluster": {
@@ -497,14 +891,14 @@ echo ECS_AWSVPC_BLOCK_IMDS=true >> /etc/ecs/ecs.config",
           "MaximumPercent": 200,
           "MinimumHealthyPercent": 50,
         },
-        "DesiredCount": 0,
+        "DesiredCount": 1,
         "EnableECSManagedTags": false,
         "EnableExecuteCommand": true,
         "HealthCheckGracePeriodSeconds": 60,
         "LaunchType": "FARGATE",
         "LoadBalancers": [
           {
-            "ContainerName": "live-call-analytics-websocket-service",
+            "ContainerName": "websocket-service",
             "ContainerPort": 8080,
             "TargetGroupArn": {
               "Ref": "ECSResourceswebSocketTargetGroup144A5CD0",
@@ -552,29 +946,6 @@ echo ECS_AWSVPC_BLOCK_IMDS=true >> /etc/ecs/ecs.config",
           ],
           "Version": "2012-10-17",
         },
-        "Policies": [
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": [
-                    "transcribe:*",
-                    "s3:*",
-                    "ec2:*",
-                    "kinesis:*",
-                    "dynamodb:*",
-                    "lambda:*",
-                    "logs:*",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-              ],
-              "Version": "2012-10-17",
-            },
-            "PolicyName": "webSocketServiceTaskPolicy",
-          },
-        ],
       },
       "Type": "AWS::IAM::Role",
     },
@@ -622,104 +993,6 @@ echo ECS_AWSVPC_BLOCK_IMDS=true >> /etc/ecs/ecs.config",
       "Properties": {
         "ContainerDefinitions": [
           {
-            "Environment": [
-              {
-                "Name": "KINESIS_STREAM_NAME",
-                "Value": "",
-              },
-              {
-                "Name": "TRANSCRIBER_CALL_EVENT_TABLE_NAME",
-                "Value": "",
-              },
-              {
-                "Name": "OUTPUT_BUCKET",
-                "Value": "",
-              },
-              {
-                "Name": "RECORDING_FILE_PREFIX",
-                "Value": "",
-              },
-              {
-                "Name": "CALL_ANALYTICS_FILE_PREFIX",
-                "Value": "",
-              },
-              {
-                "Name": "RAW_FILE_PREFIX",
-                "Value": "",
-              },
-              {
-                "Name": "TCA_DATA_ACCESS_ROLE_ARN",
-                "Value": "",
-              },
-              {
-                "Name": "TEMP_FILE_PATH",
-                "Value": "",
-              },
-              {
-                "Name": "IS_CONTENT_REDACTION_ENABLED",
-                "Value": "",
-              },
-              {
-                "Name": "TRANSCRIBE_LANGUAGE_CODE",
-                "Value": "",
-              },
-              {
-                "Name": "CONTENT_REDACTION_TYPE",
-                "Value": "",
-              },
-              {
-                "Name": "PII_ENTITY_TYPES",
-                "Value": "",
-              },
-              {
-                "Name": "CUSTOM_VOCABULARY_NAME",
-                "Value": "",
-              },
-              {
-                "Name": "CUSTOM_LANGUAGE_MODEL_NAME",
-                "Value": "",
-              },
-              {
-                "Name": "KEEP_ALIVE",
-                "Value": "",
-              },
-              {
-                "Name": "LAMBDA_HOOK_FUNCTION_ARN",
-                "Value": "",
-              },
-              {
-                "Name": "TRANSCRIBE_API_MODE",
-                "Value": "",
-              },
-              {
-                "Name": "BUFFER_SIZE",
-                "Value": "",
-              },
-              {
-                "Name": "TCA_ENABLED",
-                "Value": "",
-              },
-              {
-                "Name": "TRANSCRIBE_ENDPOINT",
-                "Value": "",
-              },
-              {
-                "Name": "IS_TCA_POST_CALL_ANALYTICS_ENABLED",
-                "Value": "",
-              },
-              {
-                "Name": "POST_CALL_CONTENT_REDACTION_OUTPUT",
-                "Value": "",
-              },
-              {
-                "Name": "START_STREAM_MAX_RETRIES",
-                "Value": "",
-              },
-              {
-                "Name": "START_STREAM_RETRY_WAIT_MS",
-                "Value": "",
-              },
-            ],
             "Essential": true,
             "HealthCheck": {
               "Command": [
@@ -731,7 +1004,7 @@ echo ECS_AWSVPC_BLOCK_IMDS=true >> /etc/ecs/ecs.config",
               "Timeout": 30,
             },
             "Image": {
-              "Fn::Sub": "\${AWS::AccountId}.dkr.ecr.\${AWS::Region}.\${AWS::URLSuffix}/cdk-hnb659fds-container-assets-\${AWS::AccountId}-\${AWS::Region}:57cae4e5f6bc3a720d056d37290f31662367ef0a3a05f1ac9693166ae95e2094",
+              "Fn::Sub": "\${AWS::AccountId}.dkr.ecr.\${AWS::Region}.\${AWS::URLSuffix}/cdk-hnb659fds-container-assets-\${AWS::AccountId}-\${AWS::Region}:63d43a2a10ebe553c9e672f756d689ce3a10c5f229bff253707971054ca94545",
             },
             "LogConfiguration": {
               "LogDriver": "awslogs",
@@ -742,10 +1015,10 @@ echo ECS_AWSVPC_BLOCK_IMDS=true >> /etc/ecs/ecs.config",
                 "awslogs-region": {
                   "Ref": "AWS::Region",
                 },
-                "awslogs-stream-prefix": "live-call-analytics-websocket-service",
+                "awslogs-stream-prefix": "websocket-service",
               },
             },
-            "Name": "live-call-analytics-websocket-service",
+            "Name": "websocket-service",
             "PortMappings": [
               {
                 "ContainerPort": 8080,
@@ -872,7 +1145,7 @@ echo ECS_AWSVPC_BLOCK_IMDS=true >> /etc/ecs/ecs.config",
       "Properties": {
         "AutoScalingGroupProvider": {
           "AutoScalingGroupArn": {
-            "Ref": "ECSResourcesASGBA47949D",
+            "Ref": "ECSResourcesAutoScalingGroupASG1CD47BE1",
           },
           "ManagedScaling": {
             "Status": "ENABLED",
@@ -898,6 +1171,27 @@ echo ECS_AWSVPC_BLOCK_IMDS=true >> /etc/ecs/ecs.config",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
+    },
+    "ECSResourceswebSocketServiceSecurityGroupfromtestECSResourcesALBSecurityGroupEE46C9068080E8526963": {
+      "Properties": {
+        "Description": "allow traffic on port 8080 from the ALB security group",
+        "FromPort": 8080,
+        "GroupId": {
+          "Fn::GetAtt": [
+            "ECSResourceswebSocketServiceSecurityGroup97EEE2EE",
+            "GroupId",
+          ],
+        },
+        "IpProtocol": "tcp",
+        "SourceSecurityGroupId": {
+          "Fn::GetAtt": [
+            "ECSResourcesALBSecurityGroup67633B88",
+            "GroupId",
+          ],
+        },
+        "ToPort": 8080,
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress",
     },
     "ECSResourceswebSocketServiceSecurityGroupfromtestVPCResourcesApplicationLoadBalancerSecurityGroupD4E228EB8080089B01E2": {
       "Properties": {
@@ -939,6 +1233,92 @@ echo ECS_AWSVPC_BLOCK_IMDS=true >> /etc/ecs/ecs.config",
         },
       },
       "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+    },
+    "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A": {
+      "DependsOn": [
+        "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB",
+        "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "5fa1330271b8967d9254ba2d4a07144f8acefe8b77e6d6bba38261373a50d5f8.zip",
+        },
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB",
+            "Arn",
+          ],
+        },
+        "Runtime": {
+          "Fn::FindInMap": [
+            "DefaultCrNodeVersionMap",
+            {
+              "Ref": "AWS::Region",
+            },
+            "value",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "logs:PutRetentionPolicy",
+                "logs:DeleteRetentionPolicy",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB",
+        "Roles": [
+          {
+            "Ref": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
     },
     "VPCResourcesApplicationLoadBalancer8B897D2E": {
       "DependsOn": [
@@ -1018,10 +1398,10 @@ echo ECS_AWSVPC_BLOCK_IMDS=true >> /etc/ecs/ecs.config",
       "Properties": {
         "DefaultActions": [
           {
-            "TargetGroupArn": {
-              "Ref": "ECSResourceswebSocketTargetGroup144A5CD0",
+            "FixedResponseConfig": {
+              "StatusCode": "403",
             },
-            "Type": "forward",
+            "Type": "fixed-response",
           },
         ],
         "LoadBalancerArn": {
@@ -1032,30 +1412,33 @@ echo ECS_AWSVPC_BLOCK_IMDS=true >> /etc/ecs/ecs.config",
       },
       "Type": "AWS::ElasticLoadBalancingV2::Listener",
     },
-    "VPCResourcesSSHSecurityGroupEABB5EC4": {
+    "VPCResourcesApplicationLoadBalancerwebSocketListenerForwardFromCloudFrontRule2650294A": {
       "Properties": {
-        "GroupDescription": "Security Group for SSH",
-        "SecurityGroupEgress": [
+        "Actions": [
           {
-            "CidrIp": "0.0.0.0/0",
-            "Description": "Allow all outbound traffic by default",
-            "IpProtocol": "-1",
+            "TargetGroupArn": {
+              "Ref": "ECSResourceswebSocketTargetGroup144A5CD0",
+            },
+            "Type": "forward",
           },
         ],
-        "SecurityGroupIngress": [
+        "Conditions": [
           {
-            "CidrIp": "0.0.0.0/0",
-            "Description": "from 0.0.0.0/0:22",
-            "FromPort": 22,
-            "IpProtocol": "tcp",
-            "ToPort": 22,
+            "Field": "http-header",
+            "HttpHeaderConfig": {
+              "HttpHeaderName": "X-From-CloudFront",
+              "Values": [
+                "RGceYNsG",
+              ],
+            },
           },
         ],
-        "VpcId": {
-          "Ref": "VPCResourcesVPC89517325",
+        "ListenerArn": {
+          "Ref": "VPCResourcesApplicationLoadBalancerwebSocketListener75D50C71",
         },
+        "Priority": 1,
       },
-      "Type": "AWS::EC2::SecurityGroup",
+      "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
     },
     "VPCResourcesVPC89517325": {
       "Properties": {

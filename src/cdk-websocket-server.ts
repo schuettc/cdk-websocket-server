@@ -30,8 +30,8 @@ export class WebSocketServer extends Stack {
       },
     );
 
-    new CfnOutput(this, 'DistributionURL', {
-      value: distributionResources.distribution.distributionDomainName,
+    new CfnOutput(this, 'websocketUrl', {
+      value: `wss://${distributionResources.distribution.distributionDomainName}/wss`,
     });
 
     new CfnOutput(this, 'ClusterArn', {
