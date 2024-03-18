@@ -380,7 +380,7 @@ exports[`Snapshot 1`] = `
             "CustomHeaders": [
               {
                 "HeaderName": "X-From-CloudFront",
-                "HeaderValue": "RGceYNsG",
+                "HeaderValue": "6IUgu9S5",
               },
             ],
             "OriginId": "defaultOrigin",
@@ -1428,7 +1428,7 @@ echo ECS_AWSVPC_BLOCK_IMDS=true >> /etc/ecs/ecs.config",
             "HttpHeaderConfig": {
               "HttpHeaderName": "X-From-CloudFront",
               "Values": [
-                "RGceYNsG",
+                "6IUgu9S5",
               ],
             },
           },

@@ -96,7 +96,7 @@ There are several key components here.
 
 #### Port Mappings
 
-In this example, we are use port `8080` on the container and host. Later we will see how to map the public facing port to this port.
+In this example, we are using port `8080` on the container and host. Later we will see how to map the public facing port to this port.
 
 #### Health Check
 
@@ -120,7 +120,7 @@ const websocketService = new FargateService(this, 'WebSocketService', {
 
 With the Fargate created, we can tie this to an Application Load Balancer.
 
-### Security Group
+#### Security Group
 
 To ensure that only the Application Load Balancer can make requests to the Fargate container, we will attach a Security Group to the Fargate Service and allow the Application Load Balancer Security Group access to it.
 
@@ -175,7 +175,7 @@ const webSocketTargetGroup = new ApplicationTargetGroup(
 );
 ```
 
-First we will create a Target Group. This is where traffic will be sent. Here we can see port `8080` as the port to send traffic to. This corresponds to the port used on the Fargate container. This Target Group will forward requests to the Fargate Service. This Application Load Balancer also includes a health check. This is different from the previously created health check as the Application Load Balancer is initiating this check rather than the container itself.
+First, we will create a Target Group. This is where traffic will be sent. Here we can see port `8080` as the port to send traffic to on the container. This corresponds to the port exposed on the Fargate container. This Target Group will forward requests to the Fargate Service. This Application Load Balancer also includes a health check. This health check is different from the previously created health check as the Application Load Balancer is initiating this check rather than the container itself.
 
 ### Listener
 
