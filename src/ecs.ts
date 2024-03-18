@@ -1,7 +1,5 @@
 import { Duration } from 'aws-cdk-lib';
-import { AutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
 import {
-  InstanceType,
   SubnetType,
   Vpc,
   SecurityGroup,
@@ -9,11 +7,9 @@ import {
   Connections,
 } from 'aws-cdk-lib/aws-ec2';
 import {
-  AsgCapacityProvider,
   Cluster,
   ContainerImage,
   CpuArchitecture,
-  EcsOptimizedImage,
   FargateService,
   FargateTaskDefinition,
   LogDrivers,
@@ -27,7 +23,7 @@ import {
   ListenerAction,
   ListenerCondition,
 } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
-import { ManagedPolicy, ServicePrincipal, Role } from 'aws-cdk-lib/aws-iam';
+import { ServicePrincipal, Role } from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 
 interface ECSResourcesProps {
@@ -48,25 +44,25 @@ export class ECSResources extends Construct {
       clusterName: 'websocket-service',
     });
 
-    const autoScalingGroup = new AutoScalingGroup(this, 'AutoScalingGroup', {
-      vpc: props.vpc,
-      instanceType: new InstanceType('m6i.large'),
-      machineImage: EcsOptimizedImage.amazonLinux2(),
-    });
+    // const autoScalingGroup = new AutoScalingGroup(this, 'AutoScalingGroup', {
+    //   vpc: props.vpc,
+    //   instanceType: new InstanceType('m6i.large'),
+    //   machineImage: EcsOptimizedImage.amazonLinux2(),
+    // });
 
-    autoScalingGroup.role.addManagedPolicy(
-      ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'),
-    );
+    // autoScalingGroup.role.addManagedPolicy(
+    //   ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'),
+    // );
 
-    autoScalingGroup.scaleOnCpuUtilization('CpuScaling', {
-      targetUtilizationPercent: 70,
-    });
+    // autoScalingGroup.scaleOnCpuUtilization('CpuScaling', {
+    //   targetUtilizationPercent: 70,
+    // });
 
-    const capacityProvider = new AsgCapacityProvider(this, 'capacityProvider', {
-      autoScalingGroup: autoScalingGroup,
-    });
+    // const capacityProvider = new AsgCapacityProvider(this, 'capacityProvider', {
+    //   autoScalingGroup: autoScalingGroup,
+    // });
 
-    this.cluster.addAsgCapacityProvider(capacityProvider);
+    // this.cluster.addAsgCapacityProvider(capacityProvider);
 
     const websocketServiceRole = new Role(this, 'WebSocketServiceRole', {
       assumedBy: new ServicePrincipal('ecs-tasks.amazonaws.com'),
@@ -163,6 +159,15 @@ export class ECSResources extends Construct {
       ],
       action: ListenerAction.forward([webSocketTargetGroup]),
       priority: 1,
+    });
+
+    const scalableTarget = websocketService.autoScaleTaskCount({
+      minCapacity: 1,
+      maxCapacity: 5,
+    });
+
+    scalableTarget.scaleOnCpuUtilization('CpuScaling', {
+      targetUtilizationPercent: 70,
     });
   }
 }

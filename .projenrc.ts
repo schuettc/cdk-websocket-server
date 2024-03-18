@@ -1,12 +1,18 @@
 const { awscdk } = require('projen');
+const { JobPermission } = require('projen/lib/github/workflows-model');
+const { UpgradeDependenciesSchedule } = require('projen/lib/javascript');
+const AUTOMATION_TOKEN = 'PROJEN_GITHUB_TOKEN';
+
 const project = new awscdk.AwsCdkTypeScriptApp({
   cdkVersion: '2.86.0',
   license: 'MIT-0',
   author: 'Court Schuett',
-  copyrightOwner: 'Amazon.com, Inc.',
-  authorAddress: 'https://aws.amazon.com',
+  copyrightOwner: 'Court Schuett',
+  authorAddress: 'https://subaud.io',
   defaultReleaseBranch: 'main',
-  workflowNodeVersion: '16.x',
+  workflowNodeVersion: '20.x',
+  jest: false,
+  projenrcTs: true,
   appEntrypoint: 'cdk-websocket-server.ts',
   name: 'cdk-websocket-server',
   deps: [
@@ -19,6 +25,7 @@ const project = new awscdk.AwsCdkTypeScriptApp({
     ignoreProjen: false,
     workflowOptions: {
       labels: ['auto-approve', 'auto-merge'],
+      schedule: UpgradeDependenciesSchedule.WEEKLY,
     },
   },
   autoApproveOptions: {
@@ -27,7 +34,6 @@ const project = new awscdk.AwsCdkTypeScriptApp({
   },
   autoApproveUpgrades: true,
   projenUpgradeSecret: 'PROJEN_GITHUB_TOKEN',
-  defaultReleaseBranch: 'main',
 });
 
 const common_exclude = [
@@ -41,5 +47,27 @@ const common_exclude = [
 project.addTask('launch', {
   exec: 'yarn && yarn projen && yarn build && yarn cdk bootstrap && yarn cdk deploy --require-approval never',
 });
+
+project.tsconfigDev.file.addOverride('include', [
+  'src/**/*.ts',
+  './.projenrc.ts',
+]);
+
+project.eslint.addOverride({
+  files: ['site/src/**/*.tsx', 'src/resources/**/*.ts'],
+  rules: {
+    'indent': 'off',
+    '@typescript-eslint/indent': 'off',
+  },
+});
+
+project.eslint.addOverride({
+  files: ['src/resources/**/*.ts', 'src/*.ts'],
+  rules: {
+    '@typescript-eslint/no-require-imports': 'off',
+    'import/no-extraneous-dependencies': 'off',
+  },
+});
+
 project.gitignore.exclude(...common_exclude);
 project.synth();
