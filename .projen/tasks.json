@@ -206,7 +206,7 @@
       },
       "steps": [
         {
-          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --dep=dev,peer,prod,optional --filter=esbuild,eslint-import-resolver-typescript,eslint-plugin-import,projen,ts-node,typescript,@aws-sdk/client-cloudfront,@types/aws-lambda,aws-lambda,express"
+          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --no-deprecated --dep=dev,peer,prod,optional --filter=@types/node,esbuild,eslint-import-resolver-typescript,eslint-plugin-import,projen,ts-node,typescript,@aws-sdk/client-cloudfront,@types/aws-lambda,aws-lambda,express"
         },
         {
           "exec": "yarn install --check-files"
