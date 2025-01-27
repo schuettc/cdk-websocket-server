@@ -28,22 +28,22 @@
     "@types/node": "^18",
     "@typescript-eslint/eslint-plugin": "^8",
     "@typescript-eslint/parser": "^8",
-    "aws-cdk": "^2.86.0",
-    "esbuild": "^0.24.0",
+    "aws-cdk": "^2",
+    "esbuild": "^0.24.2",
     "eslint": "^9",
-    "eslint-import-resolver-typescript": "^3.6.3",
+    "eslint-import-resolver-typescript": "^3.7.0",
     "eslint-plugin-import": "^2.31.0",
-    "projen": "^0.90.5",
+    "projen": "^0.91.6",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.3"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudfront": "^3.699.0",
-    "@types/aws-lambda": "^8.10.145",
+    "@aws-sdk/client-cloudfront": "^3.734.0",
+    "@types/aws-lambda": "^8.10.147",
     "aws-cdk-lib": "^2.86.0",
     "aws-lambda": "^1.0.7",
     "constructs": "^10.0.5",
-    "express": "^4.21.1"
+    "express": "^4.21.2"
   },
   "license": "MIT-0",
   "publishConfig": {
