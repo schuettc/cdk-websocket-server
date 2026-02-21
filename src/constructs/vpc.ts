@@ -28,6 +28,7 @@ export class VPCResources extends Construct {
       {
         vpc: this.vpc,
         internetFacing: true,
+        dropInvalidHeaderFields: true,
       },
     );
   }

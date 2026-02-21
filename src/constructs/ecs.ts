@@ -2,13 +2,12 @@ import { Duration } from 'aws-cdk-lib';
 import {
   SubnetType,
   Vpc,
-  SecurityGroup,
   Port,
-  Connections,
 } from 'aws-cdk-lib/aws-ec2';
 import {
   Cluster,
   ContainerImage,
+  ContainerInsights,
   CpuArchitecture,
   FargateService,
   FargateTaskDefinition,
@@ -42,27 +41,9 @@ export class ECSResources extends Construct {
     this.cluster = new Cluster(this, 'Cluster', {
       vpc: props.vpc,
       clusterName: 'websocket-service',
+      containerInsightsV2: ContainerInsights.ENHANCED,
     });
 
-    // const autoScalingGroup = new AutoScalingGroup(this, 'AutoScalingGroup', {
-    //   vpc: props.vpc,
-    //   instanceType: new InstanceType('m6i.large'),
-    //   machineImage: EcsOptimizedImage.amazonLinux2(),
-    // });
-
-    // autoScalingGroup.role.addManagedPolicy(
-    //   ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'),
-    // );
-
-    // autoScalingGroup.scaleOnCpuUtilization('CpuScaling', {
-    //   targetUtilizationPercent: 70,
-    // });
-
-    // const capacityProvider = new AsgCapacityProvider(this, 'capacityProvider', {
-    //   autoScalingGroup: autoScalingGroup,
-    // });
-
-    // this.cluster.addAsgCapacityProvider(capacityProvider);
 
     const websocketServiceRole = new Role(this, 'WebSocketServiceRole', {
       assumedBy: new ServicePrincipal('ecs-tasks.amazonaws.com'),
@@ -83,7 +64,7 @@ export class ECSResources extends Construct {
     );
 
     webSocketTask.addContainer('WebSocketContainer', {
-      image: ContainerImage.fromAsset('src/resources/containerImage'),
+      image: ContainerImage.fromAsset('src/constructs/resources/containerImage'),
       containerName: 'websocket-service',
       portMappings: [{ containerPort: 8080, hostPort: 8080 }],
       logging: LogDrivers.awsLogs({
@@ -97,34 +78,19 @@ export class ECSResources extends Construct {
       environment: {},
     });
 
-    const webSocketServiceSecurityGroup = new SecurityGroup(
-      this,
-      'webSocketServiceSecurityGroup',
-      { vpc: props.vpc, allowAllOutbound: true },
-    );
-
     const websocketService = new FargateService(this, 'WebSocketService', {
       cluster: this.cluster,
       taskDefinition: webSocketTask,
       assignPublicIp: true,
       desiredCount: 1,
       vpcSubnets: { subnetType: SubnetType.PUBLIC },
-      securityGroups: [webSocketServiceSecurityGroup],
       enableExecuteCommand: true,
     });
 
-    const albSecurityGroup = new SecurityGroup(this, 'ALBSecurityGroup', {
-      vpc: props.vpc,
-      description: 'Security Group for ALB',
-      allowAllOutbound: true,
-    });
-
-    webSocketServiceSecurityGroup.connections.allowFrom(
-      new Connections({
-        securityGroups: [albSecurityGroup],
-      }),
+    websocketService.connections.allowFrom(
+      props.applicationLoadBalancer,
       Port.tcp(8080),
-      'allow traffic on port 8080 from the ALB security group',
+      'Allow traffic from ALB on port 8080',
     );
 
     const webSocketTargetGroup = new ApplicationTargetGroup(
@@ -166,8 +132,9 @@ export class ECSResources extends Construct {
       maxCapacity: 5,
     });
 
-    scalableTarget.scaleOnCpuUtilization('CpuScaling', {
-      targetUtilizationPercent: 70,
+    scalableTarget.scaleOnRequestCount('RequestScaling', {
+      requestsPerTarget: 5,
+      targetGroup: webSocketTargetGroup,
     });
   }
 }
