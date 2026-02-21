@@ -541,26 +541,6 @@ exports[`Snapshot 1`] = `
       },
       "Type": "AWS::EC2::SecurityGroupIngress",
     },
-    "ECSResourcesWebSocketServiceTaskCountTargetCpuScaling68F32D85": {
-      "DependsOn": [
-        "ECSResourcesWebSocketServiceRoleDefaultPolicy07B79694",
-        "ECSResourcesWebSocketServiceRole413C4E03",
-      ],
-      "Properties": {
-        "PolicyName": "testECSResourcesWebSocketServiceTaskCountTargetCpuScalingEA03C766",
-        "PolicyType": "TargetTrackingScaling",
-        "ScalingTargetId": {
-          "Ref": "ECSResourcesWebSocketServiceTaskCountTargetF92737D7",
-        },
-        "TargetTrackingScalingPolicyConfiguration": {
-          "PredefinedMetricSpecification": {
-            "PredefinedMetricType": "ECSServiceAverageCPUUtilization",
-          },
-          "TargetValue": 70,
-        },
-      },
-      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
-    },
     "ECSResourcesWebSocketServiceTaskCountTargetF92737D7": {
       "DependsOn": [
         "ECSResourcesWebSocketServiceRoleDefaultPolicy07B79694",
@@ -608,6 +588,81 @@ exports[`Snapshot 1`] = `
       },
       "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
     },
+    "ECSResourcesWebSocketServiceTaskCountTargetRequestScalingC7EF4C2E": {
+      "DependsOn": [
+        "ECSResourcesWebSocketServiceRoleDefaultPolicy07B79694",
+        "ECSResourcesWebSocketServiceRole413C4E03",
+      ],
+      "Properties": {
+        "PolicyName": "testECSResourcesWebSocketServiceTaskCountTargetRequestScaling25257EC7",
+        "PolicyType": "TargetTrackingScaling",
+        "ScalingTargetId": {
+          "Ref": "ECSResourcesWebSocketServiceTaskCountTargetF92737D7",
+        },
+        "TargetTrackingScalingPolicyConfiguration": {
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "ALBRequestCountPerTarget",
+            "ResourceLabel": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Fn::Select": [
+                      1,
+                      {
+                        "Fn::Split": [
+                          "/",
+                          {
+                            "Ref": "VPCResourcesApplicationLoadBalancerwebSocketListener75D50C71",
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  "/",
+                  {
+                    "Fn::Select": [
+                      2,
+                      {
+                        "Fn::Split": [
+                          "/",
+                          {
+                            "Ref": "VPCResourcesApplicationLoadBalancerwebSocketListener75D50C71",
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  "/",
+                  {
+                    "Fn::Select": [
+                      3,
+                      {
+                        "Fn::Split": [
+                          "/",
+                          {
+                            "Ref": "VPCResourcesApplicationLoadBalancerwebSocketListener75D50C71",
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  "/",
+                  {
+                    "Fn::GetAtt": [
+                      "ECSResourceswebSocketTargetGroup144A5CD0",
+                      "TargetGroupFullName",
+                    ],
+                  },
+                ],
+              ],
+            },
+          },
+          "TargetValue": 5,
+        },
+      },
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+    },
     "ECSResourcesWebSocketTaskDefinition092AFEE1": {
       "Properties": {
         "ContainerDefinitions": [
@@ -623,7 +678,7 @@ exports[`Snapshot 1`] = `
               "Timeout": 30,
             },
             "Image": {
-              "Fn::Sub": "\${AWS::AccountId}.dkr.ecr.\${AWS::Region}.\${AWS::URLSuffix}/cdk-hnb659fds-container-assets-\${AWS::AccountId}-\${AWS::Region}:dc68c77763fc3abca9e1b4913415e8f80e20a199ae951b840452af1d19587b69",
+              "Fn::Sub": "\${AWS::AccountId}.dkr.ecr.\${AWS::Region}.\${AWS::URLSuffix}/cdk-hnb659fds-container-assets-\${AWS::AccountId}-\${AWS::Region}:6bae9b877ee0228d38eb5f00a2e8d87733218ead6c12942b84b38fe5e2d84c15",
             },
             "LogConfiguration": {
               "LogDriver": "awslogs",
